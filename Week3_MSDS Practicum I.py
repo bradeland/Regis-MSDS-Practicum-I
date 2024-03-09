@@ -20,8 +20,6 @@ from finta import TA
 import datetime as dt
 import numpy as np
 import pandas as pd
-import keras
-from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
@@ -30,6 +28,7 @@ from sklearn.metrics import mean_squared_error
 from math import sqrt
 from keras.models import Sequential
 from keras.layers import LSTM, Dense, Dropout
+
 
 # originally found a dataframe with nan values, but they didn't line up.  I know how to clear nan values, but I worked harder to find a dataset that would match up more cleanly.  I can show how to clean data and have done it the past 3 years w/data engineering :( Working smarter, not harder!
 # trying to make as dynamic as possible, plug any ticker symbol (up to 3) in.
@@ -44,25 +43,39 @@ v_start_stock_date = dt.date.today() - dt.timedelta(days=v_days)
 v_ticker_sym1 = 'LUV'
 v_ticker_sym2 = 'DAL'
 v_ticker_sym3 = 'CL=F'
-# yf.pdr_override()
 v_start = dt.date.today() - dt.timedelta(days=v_days)
-# # default end date is "today."  Can add end= if needed
-# v_oil_df = wb.DataReader('CL=F',  start=v_start)
-# v_start = dt.date.today() - dt.timedelta(days=v_days)
 
 
 def main():
-    # todo: this is working.  Need to modify to make more accurate. . .
-    v_stock_predicting = d_get_stock_and_oil_data()
-    d_neural_network(v_stock_predicting)
-    # d_calculate_rsi(v_stock_predicting)
+    # v_stock_predicting = d_get_stock_and_oil_data()
+    # d_neural_network(v_stock_predicting)
     v_closing_data_for_3, v_value = d_merge_data(v_start)
-    # d_neural_network_3_stocks_with_dates(v_closing_data_for_3, v_value)
-    # todo: this one works :) Testing w/dates
     d_neural_network_3_stocks(v_closing_data_for_3, v_value)
-
-
+    # todo: these are working above
+    # d_calculate_rsi(v_stock_predicting)
+    # d_calculate_macd(v_closing_data_for_3)
+    # d_calculate_rsi(v_closing_data_for_3)
+    # d_neural_network_3_stocks_with_dates(v_closing_data_for_3, v_value)
     # d_modeling_machine(v_stock_predicting)
+
+
+def d_calculate_macd(v_signal):
+
+    # Calculate MACD for each stock
+    # df_a['MACD'], df_a['Signal_Line'] = calculate_macd(df_a['Close'])
+    # df_b['MACD'], df_b['Signal_Line'] = calculate_macd(df_b['Close'])
+    # df_c['MACD'], df_c['Signal_Line'] = calculate_macd(df_c['Close'])
+    v_signal_predict = v_signal['Close_LUV']
+    # Calculate the MACD and Signal Line indicators
+    # 12-day EMA minus the 26-day EMA
+    EMA_12 = pd.Series(v_signal_predict.ewm(span=12, min_periods=12).mean())
+    EMA_26 = pd.Series(v_signal_predict.ewm(span=26, min_periods=26).mean())
+    MACD = EMA_12 - EMA_26
+
+    # 9-day EMA of the MACD
+    signal_line = pd.Series(MACD.ewm(span=9, min_periods=9).mean())
+
+    return MACD, signal_line
 
 
 def d_get_stock_and_oil_data():
@@ -76,6 +89,11 @@ def d_get_stock_and_oil_data():
     v_t1_data_final = v_t1_data.add_prefix(f'{v_ticker_sym1}')
     # doing only 0:5 columns from DF to match up the oil later on.
     v_t1_data_final_cleaned = v_t1_data_final.iloc[:, 0:5]
+    # Did min/max values so I could see actual price highs/lows
+    v_max_value = v_t1_data_final_cleaned.max()
+    v_min_value = v_t1_data_final_cleaned.min()
+    print(v_max_value)
+    print(v_min_value)
     # todo: write out something for RSI
     v_t1_data_final_cleaned_for_RSI = v_t1_data_final.iloc[:, 0:5]
     v_start = v_t1_data.index.T[0]
@@ -83,6 +101,10 @@ def d_get_stock_and_oil_data():
     v_t2_data = v_t2.history(period=v_start_stock, interval=v_set_interval)
     v_t2_data_final = v_t2_data.add_prefix(f'{v_ticker_sym2}')
     v_t2_data_final_cleaned = v_t2_data_final.iloc[:, 0:5]
+    v_max_value_1 = v_t2_data_final_cleaned.max()
+    v_min_value_1 = v_t2_data_final_cleaned.min()
+    print(v_max_value_1)
+    print(v_min_value_1)
     # did oil last so I could get the start date from the period above or start date from main stock to match when joining data
     yf.pdr_override()
     # default end date is "today."  Can add end= if needed
@@ -90,37 +112,53 @@ def d_get_stock_and_oil_data():
     print(v_t3_df.dtypes)
     if '=' in str(v_ticker_sym3):
         v_tick_clean = v_ticker_sym3.replace('=', '')
-        print(v_tick_clean)
         v_t3_data_final = v_t3_df.add_prefix(f'{v_tick_clean}')
         v_t3_data_final_cleaned = v_t3_data_final.iloc[:, 0:5]
+        v_max_value_2 = v_t3_data_final_cleaned.max()
+        v_min_value_2 = v_t3_data_final_cleaned.min()
+        print(v_max_value_2)
+        print(v_min_value_2)
     else:
         v_t3_data_final = v_t3_df.add_prefix(f'{v_ticker_sym3}')
         v_t3_data_final_cleaned = v_t3_data_final.iloc[:, 0:5]
+        v_max_value_1 = v_t2_data_final_cleaned.max()
+        v_min_value_1 = v_t2_data_final_cleaned.min()
+        print(v_max_value_1)
+        print(v_min_value_1)
     d_eda(v_t1_data, v_t2_data, v_t3_df)
     d_technical_indicator(v_t1_data_for_tech)
     return v_t1_data_final_cleaned
 
 
 def d_calculate_rsi(data, window=14):
-    data['RSI_Stock_Predicting'] = d_calculate_rsi(data[f'{v_ticker_sym1}close'])
-    # Function to calculate RSI
-    delta = data.diff()
-    gain = (delta.where(delta > 0, 0)).rolling(window=window, min_periods=0).mean()
-    loss = (-delta.where(delta < 0, 0)).rolling(window=window, min_periods=0).mean()
-    rs = gain / loss
+    delta = data.diff(1)
+    gain = (delta.where(delta > 0, 0)).fillna(0)
+    loss = (-delta.where(delta < 0, 0)).fillna(0)
+    avg_gain = gain.rolling(window=window, min_periods=window).mean()[:window + 1]
+    avg_loss = loss.rolling(window=window, min_periods=window).mean()[:window + 1]
+
+    rs = avg_gain / avg_loss
     rsi = 100 - (100 / (1 + rs))
     return rsi
 
 
 def d_eda(data1, data2, data3):
     print(data1.tail(10))
-    data1[["close", "volume"]].plot(subplots=True, layout=(2, 1))
-    data2[["Close", "Volume"]].plot(subplots=True, layout=(2, 1))
-    data3[["Close", "Volume"]].plot(subplots=True, layout=(2, 1))
-    print('ym')
+    fig, ax = plt.subplots(2, 1)
+    data1[["close", "volume"]].plot(subplots=True, layout=(2, 1), ax=ax)
+    fig.suptitle(f'Stock Predicting {v_ticker_sym1}')
+    plt.show()
+    fig, ax = plt.subplots(2, 1)
+    data2[["Close", "Volume"]].plot(subplots=True, layout=(2, 1), ax=ax)
+    fig.suptitle(f'Help Predicting Stock {v_ticker_sym2}')
+    plt.show()
+    fig, ax = plt.subplots(2, 1)
+    data3[["Close", "Volume"]].plot(subplots=True, layout=(2, 1), ax=ax)
+    fig.suptitle(f'Futures Help Predicting {v_ticker_sym3}')
+    plt.show()
+
+
 # getting the columns from the tuple to be in the dataset without being tuple took 4+ hours! :(
-
-
 # took me 20 hours to figure out that these need to be in numpy array :( https://www.datacamp.com/tutorial/lstm-python-stock-market
 def d_modeling_machine(v_stock_predict):
     v_stock_predict_final = v_stock_predict.reset_index()
@@ -211,26 +249,6 @@ def d_neural_network(v_stock_predict):
     plt.legend()
     plt.show()
 
-    # # Plotting the data
-    # plt.figure(figsize=(10, 6))  # Set the figure size for better readability
-    # plt.scatter(range(len(actual_prices)), actual_prices, color='blue', label='Actual', alpha=0.5)
-    # plt.scatter(range(len(predicted_prices)), predicted_prices, color='red', label='Predicted', alpha=0.5)
-    # plt.title('Actual vs Predicted Stock Prices')
-    # plt.xlabel('Sample Index')
-    # plt.ylabel('Stock Price')
-    # plt.legend()
-    # plt.show()
-    #
-    # # Plotting with lines
-    # plt.figure(figsize=(12, 6))  # Set the figure size for better readability
-    # plt.plot(actual_prices, label='Actual', color='blue', marker='o')
-    # plt.plot(predicted_prices, label='Predicted', color='red', linestyle='--', marker='x')
-    # plt.title('Actual vs Predicted Stock Prices')
-    # plt.xlabel('Sample Index')
-    # plt.ylabel('Stock Price')
-    # plt.legend()
-    # plt.show()
-
     # Calculate RMSE
     rmse = sqrt(mean_squared_error(y_test, predicted_stock_price))
     print("RMSE:", rmse)
@@ -242,6 +260,7 @@ def d_merge_data(start_date):
     # https://www.youtube.com/watch?v=Ag_1Ysqw2J4 merge easily!
     stock = [f'{v_ticker_sym1}', f'{v_ticker_sym2}', f'{v_ticker_sym3}']
     df_merged = yf.download(stock, start=start_date)
+    print(df_merged.tail(10))
     # df_merged_with_date = df_merged.reset_index()
     for d in df_merged.columns:
         v_tuple_name = d
@@ -249,8 +268,26 @@ def d_merge_data(start_date):
         # Replace the tuple-named column with the new string name
         df_merged.columns = [v_target_name if col == d else col for col in df_merged.columns]
     df_merged_final = df_merged.dropna()
+    # Reset the index to bring in the date to the dataset
     df_merged_final_with_date = df_merged_final.reset_index()
+
+    # Plots the merged stocks
+    plt.figure(figsize=(10, 6))
+    plt.plot(df_merged_final_with_date[f'{v_value_using_to_predict}{v_ticker_sym1}'], label=f"Stock Predicting")
+    plt.plot(df_merged_final_with_date[f'{v_value_using_to_predict}{v_ticker_sym2}'], label=f"Same Industry as Prediction Stock")
+    plt.plot(df_merged_final_with_date[f'{v_value_using_to_predict}{v_ticker_sym3}'], label=f"Futures Stock")
+
+    # Add titles and labels
+    plt.title('Stocks over time')
+    plt.xlabel('# of Days')
+    plt.ylabel('Price')
+    plt.legend()
+    plt.xticks(rotation=45)
+    plt.grid(True)
+    plt.show
+
     df_merged_closing = df_merged_final_with_date[['Date', f'{v_value_using_to_predict}{v_ticker_sym1}', f'{v_value_using_to_predict}{v_ticker_sym2}', f'{v_value_using_to_predict}{v_ticker_sym3}']]
+
     # adjusted close definition: https://help.yahoo.com/kb/SLN28256.html#:~:text=Adjusted%20close%20is%20the%20closing,applicable%20splits%20and%20dividend%20distributions.
     # explanation on why I'm not going to use this.  Looking for shorter term trades. https://www.reddit.com/r/investing/comments/1gv2hr/yahoo_finance_closing_price_vs_adjusted_price/
     return df_merged_closing, v_value_using_to_predict
@@ -340,7 +377,7 @@ def d_neural_network_3_stocks_with_dates(v_predictor_of_3, v_value_passed):
 
 def d_neural_network_3_stocks(v_predictor_of_3, v_value_passed):
     # todo: make sure you have your 2nd/3rd stocks in x
-    X = v_predictor_of_3[[f'{v_value_passed}{v_ticker_sym2}', f'{v_value_passed}{v_ticker_sym2}']].values
+    X = v_predictor_of_3[[f'{v_value_passed}{v_ticker_sym2}', f'{v_value_passed}{v_ticker_sym3}']].values
     y = v_predictor_of_3[f'{v_value_passed}{v_ticker_sym1}']
     y_final = y.to_numpy()
     # Normalize the data
@@ -353,15 +390,15 @@ def d_neural_network_3_stocks(v_predictor_of_3, v_value_passed):
     # Split the data into training and testing sets
     X_train, X_test, y_train, y_test = train_test_split(X_scaled, y_scaled, test_size=0.2, random_state=42)
 
-    # Build the model (added a couple of dropouts to make sure the model isn't over-fit [meaning the NN can predict the price too easily and not learn new data])
+    # Building the model (added a couple of dropouts to make sure the model isn't over-fit [meaning the NN can predict the price too easily and not learn new data])
     model = Sequential([
         Dense(64, activation='relu', input_shape=(2,)),
-        Dropout(0.5),
+        Dropout(0.2),
         Dense(64, activation='relu'),
-        Dropout(0.5),
+        Dropout(0.2),
         Dense(1)
     ])
-
+    # .15 with .2 dropout
     model.compile(optimizer='adam', loss='mean_squared_error')
     # Train the model
     model.fit(X_train, y_train, epochs=100, batch_size=32, validation_split=0.2)
