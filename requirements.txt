@@ -1,0 +1,14 @@
+pandas-datareader
+pandas
+statsmodels
+datetime
+numpy
+matplotlib
+scipy
+stats
+seaborn
+finta
+numpy
+tensorflow
+scikit-learn
+keras
