@@ -24,7 +24,14 @@ File-->Settings-->Python Interpreter-->Click the + and search for the library-->
 ![image](https://github.com/bradeland/Regis-MSDS-Practicum-I/assets/23301104/c6242b28-a073-4efa-ae32-fdc25dc02085)
 
 # Dataset
-The dataset was all gathered by using the yfinance library.  
+The dataset was all gathered by using the yfinance library.  The stocks/futures I chose were:
+
+•	LUV (Southwest Airlines)
+
+•	DAL (Delta Airlines)
+
+•	Crude Oil (CL=F)
+
 The values for each of the sets of data contained the following:
 
 •	Date
@@ -38,5 +45,25 @@ The values for each of the sets of data contained the following:
 •	Close
 
 •	Volume
+
+# Data Cleaning
+I had to merge three datasets together and then choose which value from the above to base the analysis on.  I noticed that there were some dates where NAN values were pulling through.  For instance, on President's Day 2024, there were no values for the airlines stock as shown below:
+![image](https://github.com/bradeland/Regis-MSDS-Practicum-I/assets/23301104/f277d6b2-eca8-49e5-857c-6464580d6690)
+
+This is because each countries stocks arent' traded on federal holidays, but I was using a future (crude oil) in my analysis.  These along with other financial assets, like forex (currencies) are traded throughout the year regardless of any federal holidays.   
+I decided to remove these values from the prediction dataset by dropping them.
+
+# Predicting Value
+When researching it appears that adjusted close is not the best, but normal/nominal closing is the best value to try to get the next day's stock price.
+Adjusted closing takes into account any stock dividends and can skew the numbers as shown in the below screenshot.
+![image](https://github.com/bradeland/Regis-MSDS-Practicum-I/assets/23301104/180fa170-248c-4bc1-a117-2b4ade4da104)
+Conversley the normal close as shown below is the better number to use when doing shorter term stock predictions:
+![image](https://github.com/bradeland/Regis-MSDS-Practicum-I/assets/23301104/10cde0e1-7b2b-4daa-8793-49ba8adb4420)
+
+# Model Used
+I decided to use sequential modeling from the keras library in trying to predict the stock price for Southwest Airlines.
+
+
+
 
 
