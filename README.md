@@ -60,8 +60,27 @@ Adjusted closing takes into account any stock dividends and can skew the numbers
 Conversley the normal close as shown below is the better number to use when doing shorter term stock predictions:
 ![image](https://github.com/bradeland/Regis-MSDS-Practicum-I/assets/23301104/10cde0e1-7b2b-4daa-8793-49ba8adb4420)
 
-# Model Used
-I decided to use sequential modeling from the keras library in trying to predict the stock price for Southwest Airlines.
+# Predicting RMSE within model
+I used the Root Mean Squared Error (RMSE) to give the accuracy of the model.  Here's a simple graph to show how this is calculated.  
+
+![image](https://github.com/bradeland/Regis-MSDS-Practicum-I/assets/23301104/ead1b7e8-c036-449f-9542-efcd936c1b18)
+
+You take the distance from the predicted value and put all those numbers together to get an overall RMSE for the model.  The lower the RMSE, the better job the model does with prediction.
+
+I decided to use sequential modeling from the keras library in trying to predict the stock price for Southwest Airlines.  When predicting for one stock, the range of the RMSE was ~2.5-3.5.  
+
+To see how well the intermarket analysis model did, feel free to download the code and play around with it.  You can choose any three stocks/futures to plug into the script and add or take away as many as you'd like.
+
+# Conclusion
+Overall, the use of intermarket analysis can and should be used when trying to determine even one stock.  The reason for this is how closely related things can be.  If one thing happens to another stock it can greatly affect the outcome of the other.  If I could continue my research I would do the following:
+
+•	Figure out how to scan the stock market as a whole and find maybe the top 10-20 stocks most closely correlated with the stock I’m trying to predict.
+
+•	Bring in one to two technical indicators to help with the prediction.
+
+•	Look at more models to try to predict the accuracy even better.
+
+•	Figure out how once I got a good working model, how to use AI or some way to have the code place the buy/sell trades for me.
 
 
 
