@@ -1,8 +1,12 @@
-Using Intermarket Analysis to try to predict a stock
+# Using Intermarket Analysis to try to predict a stock
+
 MSDS692: Data Science Practicum
+
 Author: Brad Eland
+
 Spring 2024
-Purpose:
+
+# Purpose:
 I want to use intermarket analysis to try to predict the price of one stock based on data and correlations within other stocks.  The current way people many people try to predict a stock is based on looking at one stock and maybe trying to base the price movement on a previous open/close/high/low.  They may only look at one chart as shown below:
  ![image](https://github.com/bradeland/Regis-MSDS-Practicum-I/assets/23301104/cab6ecba-ba3e-4e0e-a25b-ea2a86ea9590)
 
