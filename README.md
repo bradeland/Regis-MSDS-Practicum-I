@@ -22,5 +22,21 @@ If you’re unable to run anything or get an error, you can manually download an
 
 File-->Settings-->Python Interpreter-->Click the + and search for the library-->Install Package
 ![image](https://github.com/bradeland/Regis-MSDS-Practicum-I/assets/23301104/c6242b28-a073-4efa-ae32-fdc25dc02085)
- 
+
+# Dataset
+The dataset was all gathered by using the yfinance library.  
+The values for each of the sets of data contained the following:
+
+•	Date
+
+•	High
+
+•	Low
+
+•	Open
+
+•	Close
+
+•	Volume
+
 
